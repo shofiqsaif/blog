@@ -32,32 +32,35 @@ app.use(express.static("public"));
 
 
 app.get("/",(req,res)=>{
-  console.log(req.params);
-  res.render("home",{
-    starter : homeStartingContent,
-    posts : posts
+  
+  let blogs = Blog.find({}).then((posts)=>{
+    res.render("home",{
+      starter : homeStartingContent,
+      posts : posts
+    });
   });
+
+
+  
 });
 
 app.get("/posts/:topic",(req,res)=>{
   let topic = req.params.topic;
-  topic = _.toLower(topic);
-  topic = _.replace(topic,'-',' ');
+  // topic = _.toLower(topic);
+  // topic = _.replace(topic,'-',' ');
 
   console.log("This is the param topic : ", topic);
   let isFound = false;
-  for(let i=0; i<posts.length; i++){
-    console.log(_.toLower(posts[i].title));
-    if (topic === _.toLower(posts[i].title)){
-      isFound = true;
-      res.render("post",{
-        title: posts[i].title,
-        content: posts[i].content,
-      })
-
-      break;
-    }
-  }
+  
+  Blog.findOne({title:topic}).then((blog)=>{
+    isFound = true;
+    res.render("post",{
+      title: blog.title,
+      content: blog.content
+    });
+  }).catch((e)=>{
+    console.log(e);
+  });
 
   if(isFound) console.log("Match Found !");
   else console.log("Match Not Found!");
@@ -83,8 +86,16 @@ app.post("/compose",(req,res)=>{
     content : req.body.content,
   }
   posts.push(post);
+
+  const blog = new Blog({
+    title: req.body.title,
+    content: req.body.content
+  });
+  blog.save().then(()=>{
+    res.redirect("/");
+  })
   // console.log(posts);
-  res.redirect("/");
+  
 });
 
 app.listen(process.env.port || 3000, function () {
