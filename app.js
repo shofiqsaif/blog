@@ -4,6 +4,16 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const _ = require('lodash');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/blogDB');
+
+const blogSchema = new mongoose.Schema({
+  title: String,
+  content : String
+});
+
+const Blog = mongoose.model("blog",blogSchema);
 
 const posts = [];
 const homeStartingContent =
@@ -77,6 +87,6 @@ app.post("/compose",(req,res)=>{
   res.redirect("/");
 });
 
-app.listen(3000, function () {
+app.listen(process.env.port || 3000, function () {
     console.log("Server started on port 3000");
 });
